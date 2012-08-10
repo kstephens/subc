@@ -1,0 +1,27 @@
+#!/bin/sh
+
+os=`uname`
+mac=`uname -m`
+
+if test -f src/scc0; then
+	echo "You may want to run 'make clean' first."
+	exit 1
+fi
+
+case $os/$mac in
+FreeBSD/i386)	os=freebsd ; mac=386    ;;
+FreeBSD/amd64)	os=freebsd ; mac=x86-64 ;;
+NetBSD/amd64)	os=netbsd  ; mac=x86-64 ;;
+Linux/i386)	os=linux   ; mac=386    ;;
+Linux/i686)	os=linux   ; mac=386    ;;
+*)
+	echo "Sorry, $os/$mac is currently not supported."
+	exit 1
+	;;
+esac
+
+(cd src && ln -fs targets/cg$mac.c cg.c)
+(cd src && ln -fs targets/cg$mac.h cg.h)
+(cd src/lib && ln -fs ../targets/crt0-$os-$mac.s crt0.s)
+
+echo "Building for $os/$mac. Now cd to src and run make."

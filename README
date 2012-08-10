@@ -1,0 +1,279 @@
+
+	SubC Compiler, Version 2012-04-15
+	By Nils M Holm, 2011--2012
+	Placed in the public domain
+
+
+	SUMMARY
+
+	SubC is a compiler for a (mostly) strict and sane subset of
+	C as described in "The C Programming Language", 2nd Ed.
+	The language is also known informally as "ANSI C" or "C89".
+
+	A previous version of the compiler is described in great detail
+	in the book "Practical Compiler Construction", which can be
+	purchased at Lulu.com. See the end of this text for ordering
+	information.
+
+	The SubC compiler can compile itself. Unlike many other small C
+	compilers, it does not bend the rules, though. Its code passes
+	"gcc -Wall -pedantic" with little or no warnings (depending on
+	the gcc version used).
+
+	The compiler generates code for GAS, the GNU assembler. It
+	targets the 386 and x86-64 processors and currently offers
+	runtime support for the following platforms:
+
+		FreeBSD/386
+		FreeBSD/x86-64
+		NetBSD/x86-64
+		Linux/386
+
+	Porting it to other 32-bit or 64-bit platforms should be quite
+	straight-forward. See the file "Porting" and/or the book for a
+	general road map.
+
+	SubC is fast and simple. Its output is typically small (due
+	to a non-bloated library), but not very runtime efficient,
+	because it employs none of the code synthesis or optimization
+	strategies explained in the book.
+
+
+	CHANGES TO THE BOOK VERSION
+
+	Note: The book version runs on FreeBSD/386 exclusively.
+
+	This version of the SubC compiler supports the following
+	parts of C language that were not supported by the SubC
+	version described in "Practical Compiler Construction":
+
+	o  &array is now valid syntax (you no longer have to write
+	   &array[0]).
+
+	o  the auto and register keywords are recognized (as no-ops).
+
+	o  enums may now be local.
+
+	o  extern identifiers may now be declared locally.
+
+	o  Prototypes may have the static storage class.
+
+	o  There is experimental support for structs and unions.
+
+	o  jmp_buf is now a struct; setjmp() and longjmp() must be
+	   called with &jmp_buf.
+
+	o  FILEs are now structs and can no longer be mistaken for
+	   ints by the type checker.
+
+	o  The #error, #line, and #pragma command have been added.
+
+	o  There is a (non-standard) kprintf() function, which is
+	   like fprintf(), but uses a file descriptor.
+
+
+	DIFFERENCES BETWEEN SUBC (THIS VERSION) AND FULL C89
+
+	o  The following keywords are not recognized:
+	   const, double, float, goto, long, short, signed, typedef,
+	   unsigned, volatile.
+
+	o  There are only two primitive data types: the signed int and
+	   the unsigned char; there are also void pointers, and there
+	   is limited support for int(*)() (pointers to functions
+	   of type int).
+
+	o  No more than two levels of indirection are supported, and
+	   arrays are limited to one dimension, i.e. valid declarators
+	   are limited to x, x[], *x, *x[], **x (and (*x)()).
+
+	o  K&R-style function declarations (with parameter
+	   declarations between the parameter list and function body)
+	   are not accepted.
+
+	o  There are no ``volatile'', or ``const'' variables. No
+	   register allocation takes place, so all variables are
+	   implicitly ``volatile''.
+
+	o  There is no typedef.
+
+	o  There are no unsigned integers and no long integers.
+
+	o  Struct/union declarations must be separate from the
+	   declarations of struct/union objects, i.e.
+	   ``struct p { int x, y; } q;'' will not work.
+
+	o  Struct/union declarations must be global (struct and union
+	   objects may be declared locally, though).
+
+	o  Only ints, chars and arrays of int and char can be
+	   initialized in their declarations; pointers can be
+	   initialized with 0 (but not with NULL).
+
+	o  Local arrays cannot have initializers.
+
+	o  Local declarations are limited to the beginnings of function
+	   bodies (they do not work in other compound statements).
+
+	o  Arguments of prototypes must be named.
+
+	o  There is no goto.
+
+	o  There are no parameterized macros.
+
+	o  The #if and #elif preprocessor commands are not recognized.
+
+	o  The preprocessor does not accept multi-line command.
+
+	o  The preprocessor does not accept comments in commands.
+
+	o  The preprocessor does not recognize the # and ## operators.
+
+	o  There may not be any blanks between the # that introduces
+	   a preprocessor command and the subsequent command (e.g.:
+	   "# define" would not be recognized as a valid command).
+
+	o  The sizeof operator requires parentheses.
+
+	o  Subscripting an integer with a pointer (e.g. 1["foo"]) is
+	   not supported.
+
+	o  Function pointers are limited to one single type, int(*)(),
+	   and they have no argument types.
+
+	o  There is no assert() due to the lack of parameterized macros.
+
+	o  The atexit() mechanism is limited to one function (this may
+	   even be covered by TCPL2).
+
+	o  The setjmp()/longjmp() functions must be called with &jmp_buf
+	   due to the lack of typedef.
+
+	o  The signal() function returns int due to the lack of a more
+	   sophisticated type system; the return value must be casted to
+	   int(*)() manually.
+
+	o  Most of the time-related functions are missing, in particular:
+	   asctime(), gmtime(), localtime(), mktime(), and strftime().
+
+	o  The clock() function is missing, because CLOCKS_PER_SEC
+	   varies among systems.
+
+	o  The ctime() function ignores the time zone.
+
+
+	SELECTING A TARGET PLATFORM
+
+	The easiest way to prepare a build is to run the configure
+	script in this directiry. Don't worry, it is just a simple
+	script that will figure out the host platform via uname and
+	link a few machine-dependent files into place.
+
+	If you want to do this manually: select one of the cg*.c
+	files in src/targets and symlink it to src/cg.c. Also link
+	the corresponding header file. E.g.:
+
+		(cd src && ln -fs targets/cg386.c cg.c)
+		(cd src && ln -fs targets/cg386.h cg.h)
+
+	Select the C startup (crt0) file for your OS and CPU type
+	from src/targets and link it to src/lib/crt0.s, e.g.:
+
+		(cd src/lib && \
+		 ln -fs ../targets/crt0-freebsd-386.s crt0.s)
+
+	If your OS/CPU combination is not supported, you might try
+	to port the compiler. See the file "Porting" for details.
+
+
+	COMPILING THE COMPILER
+
+	The compiler sources are contained in the "src" directory,
+	so all the subsequent steps assume that this is your current
+	working directory. (I.e. do a "cd src" now.)
+
+	On a supported system, just type "make".
+
+	Without "make" the compiler can be bootstrapped by running:
+
+		cc -o scc0 *.c
+
+	To compile and package the runtime library:
+
+		./scc0 -c lib/*.c
+		ar -rc lib/libscc.a lib/*.o
+		ranlib lib/libscc.a
+
+	To compile the startup module:
+
+		as -o lib/crt0.o lib/crt0.s
+
+	To test the compiler, either run "make test" or perform the
+	following steps:
+
+		./scc0 -o scc1 *.c
+		./scc1 -o scc *.c
+		cmp scc1 scc
+
+	There should not be any differences between the scc1 and scc
+	executables.
+
+
+	INSTALLING THE COMPILER
+
+	The easy way would be to set up the SCCDIR and BINDIR variables
+	in src/Makefile to suit your taste and then run "make install".
+
+	If you want to install the SubC compiler manually, you will
+	have to change the SCCDIR variable in the compiler itself.
+	It points to the base directory which will contain the SubC
+	headers and runtime library. SCCDIR defaults to "." and can
+	be overridden on the command line:
+
+		./scc1 -o scc -D 'SCCDIR="$INSTALLDIR"' *.c
+
+	(where $INSTALLDIR is where the compiler will be installed.)
+
+	You can place the 'scc' executable wherever you want, as long
+	as its location is covered by the PATH environment variable.
+	The headers (include/*) go to $INSTALLDIR/include, the library
+	'lib/libscc.a' and the startup module 'lib/crt0.o' go to
+	$INSTALLDIR/lib.
+
+	To test the installation just re-compile the compiler:
+
+		rm scc && scc -o scc *.c
+
+
+	FURTHER INFORMATION
+
+	For a thorough explanation of the internals of (an earlier
+	version of) the compiler, including theoretical backgrounds,
+	see my book
+
+	"Practical Compiler Construction"
+
+	which can be bought at Lulu.com:
+
+	http://www.lulu.com/content/12610903     (Paperback)
+	http://www.lulu.com/content/12685672     (PDF)
+
+
+	THANKS
+
+	To the Super Dimension Fortress (SDF.ORG) for providing
+	free shell accounts on 64-bit NetBSD machines.
+
+	To Bakul Shah for granting me remote access to a 64-bit
+	FreeBSD system and a Linux VM.
+
+
+	CONTACT
+
+	Send feedback, suggestions, etc to:
+
+	n m h @ t 3 x . o r g
+
+	See http://t3x.org/contact.html for current ways through my
+	spam filter.
+

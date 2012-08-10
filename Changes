@@ -1,0 +1,34 @@
+2012-03-26 Made "&array" valid syntax.
+2012-03-26 Added auto and register keywords (no-ops).
+2012-03-26 Added local enum declarations.
+2012-03-26 Added local extern identifiers.
+2012-03-26 Added static prototypes.
+2012-03-27 Added global struct/union declaration syntax.
+2012-03-28 Added struct/union symbol table support.
+2012-03-29 Added global struct/union definition syntax and semantics.
+2012-03-29 Added local struct/union definition syntax and semantics.
+2012-03-30 Added local static struct/union definition semantics.
+2012-03-30 Added struct/union access syntax (x->y and x.y).
+2012-03-31 Added struct/union access semantics.
+2012-04-01 Changed jmp_buf type from int[2] to struct _jmp_buf.
+2012-04-02 Fixed declaration parser (accept fn returning struct/union).
+2012-04-02 Made FILE a struct. (Breaking stdio library!)
+2012-04-03 Fixed pointer arithmetics (struct/union**).
+2012-04-03 Added the kprintf() function (fd-based printf()).
+2012-04-03 Added #error, #line, #pragma preprocessor commands.
+2012-04-03 Added proper struct* arithmetics for ++ and --.
+2012-04-04 Added proper struct* arithmetics for + and -.
+2012-04-05 Added struct/union cast operators.
+2012-04-05 Made structs/unions invalid operands to arithmetic ops.
+2012-04-12 Fixed increment/decrement of pointer to struct/union.
+2012-04-13 Added the x86-64 code generator (cgx86-64.c).
+2012-04-14 Added the NetBSD/x86-64 startup module (crt0-netbsd-x86-64.s).
+2012-04-15 Experimental NetBSD/x86 support completed.
+2012-04-15 Re-organized archive to support multiple targets.
+2012-04-16 Fixed an off-by-one error in getenv().
+2012-04-17 Improved some error messages.
+2012-04-17 Added the FreeBSD/x86-64 crt0 module (crt0-freebsd-x86-64.s).
+2012-04-18 Moved machine word size to target description.
+2012-04-18 Added a configure script.
+2012-04-25 Added the Linux/386 crt0 module (crt0-linux-386.s).
+2012-04-26 Removed all GNU libc dependencies from Linux crt0.

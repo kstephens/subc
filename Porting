@@ -1,0 +1,90 @@
+
+
+	PORTING SUBC TO DIFFERENT PLATFORMS
+
+
+	(1)  Create a new target description file
+
+	Copy one of the existing cg*.c files in the src/targets
+	directory to create a new target description. The target
+	description will contain the instructions that will be
+	emitted by the code generator. Also copy the corresponding
+	cg*.h file. For example, to create an FOO back-end:
+
+		cp src/targets/cg386.c src/targets/cgxFOO.c
+		cp src/targets/cg386.h src/targets/cgxFOO-64.h
+
+
+	(2) Select the proper machine word size
+
+	Edit the newly created header file (e.g.: cgFOO-64.h) and
+	change its BPW constant to the *natural* machine word size
+	on the new target. This would be 32 bits for a 32-bit
+	processor, 64 bits for a 64-bit processor, etc. Note that
+	the word size selected here must be large enough to hold
+	an arbitrary address (a pointer) on the target. Incidentally,
+	the selected size will be sizeof(int) in the new back-end.
+
+
+	(3) Create a target description
+
+	This is one of the hard parts. You will have to replace the
+	code emitted by each function in the new target description
+	file to generate code for your new platform. If you are and
+	experienced compiler writer and you are familiar with one of
+	the existing targets, you may be able to guess the proper
+	sequences. Otherwise, you probably need a copy of the book
+	"Practical Compiler Construction"[1] now, which explains the
+	target description format in detail.
+
+	[1] See the README.
+
+	For adapting the 386 target to the x86-64 processor, this
+	step basically involved (a) replacing register names (%eax
+	to %rax, etc), (b) replacing instruction suffixes (movl->movq,
+	etc), (c) replacing ".long" by ".quad", and (d) adjusting all
+	values that deal with word sized, i.e. adding multiples of 8
+	in stead of 4 to a register in pointer arithmetics, etc.
+
+	Of course, other processors will differ from the 386 by a
+	greater margin, so this step will be quite a piece of work.
+	The conclusion part of the book contains some practical tips
+	for approaching this task.
+
+
+	(4) Create an OS-specific C startup file
+
+	Copy one of the existing crt0-*.s files in the src/targets
+	directory to create a new startup file. For example, to create
+	a NetBSD/FOO startup file:
+
+		cp src/targets/crt0-freebsd-386.s \
+		   src/targets/crt0-netbsd-foo.s
+
+
+	(5) Create the OS interface
+
+	This step is a mess and requires some decent in-depth knowledge
+	of the target platform, i.e. its internal command line argument
+	format, environment location, its calling conventions, etc.
+
+	Again, if you are really familiar with one of the supported
+	platforms, you may be able to rewrite the individual functions.
+	Otherwise, it is time to get a copy of "Practical Compiler
+	Construction", which explains this part in depth.
+
+	You may run into a lot of trouble at this point. For example,
+	the author needed quite a while to figure out that NetBSD needs
+	a PT_NOTE section now, or the executable ejected by ld will not
+	be executable. What a mess!
+
+
+	(6) Compile, Test, Repeat
+
+	A lot of things will go wrong. Do not get discouraged. This
+	is normal. First make the compiler emit syntactically correct
+	assembler code. Then make it compile the library. Then test
+	some small programs. Then compile the compiler with itself.
+	Once it passes the triple test (make test), the compiler can
+	be considered stable.
+

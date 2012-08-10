@@ -1,0 +1,1 @@
+../targets/crt0-freebsd-386.s

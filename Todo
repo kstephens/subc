@@ -1,0 +1,8 @@
+
+	- add a code synthesizer and optimizer
+	- add parameterized macros
+		- add assert()
+		- add stdio macros: getc(), putchar(), etc
+	? add dynamic local initializers
+	? add GOTO and labels
+
